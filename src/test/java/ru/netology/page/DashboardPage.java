@@ -2,33 +2,48 @@ package ru.netology.page;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import lombok.val;
 
-import static com.codeborne.selenide.Selenide.$$x;
-import static com.codeborne.selenide.Selenide.$x;
-import static java.lang.Integer.valueOf;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.codeborne.selenide.Selenide.*;
+import static java.lang.Integer.parseInt;
 
 public class DashboardPage {
 
-    private ElementsCollection cards = $$x("//li[@class='list__item']/div");
-    private ElementsCollection actionButtons = $$x("//button[@data-test-id='action-deposit']");
+    private SelenideElement heading = $("[data-test-id=dashboard]");
+    private static SelenideElement firstCardButton = $("[data-test-id='92df3f1c-a033-48e6-8390-206f6b1f56c0'] .button");
+    private static SelenideElement secondCardButton = $("[data-test-id='0f3f5c2a-249e-4c3d-8287-09f7a039391d'] .button");
 
-    private SelenideElement reloadButton = $x("//button[@data-test-id='action-reload']");
-    private SelenideElement errorNotification = $x("//div[@data-test-id='error-notification']");
+    private static ElementsCollection cards = $$(".list__item div");
+    private static final String balanceStart = "баланс: ";
+    private static final String balanceFinish = " р.";
 
-    public TransferPage transferClick(int indexCardTo){
-        actionButtons.get(indexCardTo).click();
+    public DashboardPage() {
+    }
+
+    public static TransferPage pushFirstCardButton() {
+        firstCardButton.click();
         return new TransferPage();
     }
 
-    public int getBalance(int index){
-        reloadButton.click();
-        String[] card = cards.get(index).toString().split(" ");
-        return Integer.parseInt(card[6]);
+    public static TransferPage pushSecondCardButton() {
+        secondCardButton.click();
+        return new TransferPage();
     }
 
-    public void assertBalance(int index, int expectedBalance){
-        int actualBalance = getBalance(index);
-        assertEquals(expectedBalance, actualBalance);
+    public static int getFirstCardBalance() {
+        val text = cards.first().text();
+        return extractBalance(text);
+    }
+
+    public static int getSecondCardBalance() {
+        val text = cards.last().text();
+        return extractBalance(text);
+    }
+
+    private static int extractBalance(String text) {
+        val start = text.indexOf(balanceStart);
+        val finish = text.indexOf(balanceFinish);
+        val value = text.substring(start + balanceStart.length(), finish);
+        return Integer.parseInt(value);
     }
 }
